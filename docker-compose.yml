@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    restart: always
+    environment:
+      - POSTGRES_DB=fueldb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Healthcheck ensures DB is ready before Web starts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    restart: always
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    # UPDATE THIS COMMAND:
+    command: >
+      sh -c "python manage.py migrate &&
+              python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+      - /app/.venv
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      - DATABASE_URL=postgis://postgres:postgres@db:5432/fueldb
+      - REDIS_URL=redis://redis:6379/1
+      - ORS_API_KEY=${ORS_API_KEY}
+
+volumes:
+  postgres_data:
