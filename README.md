@@ -34,7 +34,11 @@ uv sync
 ```
 python manage.py migrate
 ```
-4. (Optional) Load or create `FuelStation` data in the DB.
+4. Load or create `FuelStation` data in the DB. This step will take few hours to finish. This script
+geocodes all the fule stations in the `fuel_prices.csv` file using a public free api.
+```
+python manage.py load_fuel_data
+```
 5. Run development server:
 ```
 python manage.py runserver
@@ -50,12 +54,8 @@ python manage.py runserver
   DJANGO_SECRET_KEY=replace_with_strong_secret_key
   DJANGO_DEBUG=True
   DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
-
-  POSTGRES_DB=fueldb
-  POSTGRES_USER=postgres
-  POSTGRES_PASSWORD=postgres
-  POSTGRES_HOST=localhost
-  POSTGRES_PORT=5432
+  DATABASE_URL
+  REDIS_URL
 ```
 
 2. Build and run
@@ -67,6 +67,11 @@ docker compose up --build
 ```
 docker compose exec web python manage.py migrate
 ```
-4. The API should be available on `http://localhost:8000/api`.
+4. Load or create `FuelStation` data in the DB. This step will take few hours to finish. This script
+geocodes all the fule stations in the `fuel_prices.csv` file using a public free api.
+```
+docker compose exec web python manage.py load_fuel_data
+```
+5. The API should be available on `http://localhost:8000/api`.
 
 ---
